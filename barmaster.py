@@ -31,21 +31,43 @@ Create Window Function: create_window()
 """
 
 
-def create_window():
+def createWindow():
 
     window = Tk()
     window.title("BarMaster POS")
-    window.geometry("400x250")
+    window.geometry("1200x480")
 
     return window
 
 
-def clockIn():
+def changeClock(empid):
     return 1
+
+
+def clockIn():
+    clockinWindow = createWindow()
+    loginIDLabel = Label(clockinWindow, text="Employee ID: ").grid(row=0, column=0)
+    loginID = Entry(clockinWindow).grid(row=0, column=1)
+
+    clockinButton = Button(
+        clockinWindow,
+        text="Clock In",
+        command=(lambda: changeClock(loginID)),
+    )
+    clockinButton.grid(row=1, column=0)
 
 
 def clockOut():
-    return 1
+    clockoutWindow = createWindow()
+    loginIDLabel = Label(clockoutWindow, text="Employee ID: ").grid(row=0, column=0)
+    loginID = Entry(clockoutWindow).grid(row=0, column=1)
+
+    clockoutButton = Button(
+        clockoutWindow,
+        text="Clock Out",
+        command=(lambda: changeClock(loginID)),
+    )
+    clockoutButton.grid(row=1, column=0)
 
 
 def displayInventory():
@@ -112,7 +134,7 @@ def deleteEmployee():
 
 
 def generateEmployee():
-    empWindow = create_window()
+    empWindow = createWindow()
 
     fnameLabel = Label(empWindow, text="First Name:").grid(row=0, column=0)
     lnameLabel = Label(empWindow, text="Last Name:").grid(row=1, column=0)
@@ -183,7 +205,7 @@ def generateEmployee():
 
 if __name__ == "__main__":
 
-    window = create_window()
+    window = createWindow()
 
     clockIn = Button(window, text="Clock In", command=clockIn).grid(
         row=0, column=0, sticky="ew"
