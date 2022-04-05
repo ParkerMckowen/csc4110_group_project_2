@@ -341,8 +341,78 @@ def generateEmployee():
     empWindow.mainloop()
 
 
-def cosmopolitanMaker():
-    return 1
+ORDER = {
+    "ingredients": {
+        "vodka": 0,
+        "bourbon": 0,
+        "bitters": 0,
+        "tequila": 0,
+        "cointreau": 0,
+        "limejuice": 0,
+        "cranberryjuice": 0,
+        "gin": 0,
+        "campari": 0,
+        "vermouth": 0,
+        "gingerbeer": 0,
+        "rum": 0,
+        "whiskey": 0,
+        "simplesyrup": 0,
+        "lemonjuice": 0,
+    },
+    "server": "",
+}
+
+
+def addToOrder(drinkName):
+    if drinkName == "OldFashioned":
+        ORDER["ingredients"]["bourbon"] += 2
+        ORDER["ingredients"]["bitters"] += 1
+
+    elif drinkName == "Margarita":
+        ORDER["ingredients"]["tequila"] += 2
+        ORDER["ingredients"]["cointreau"] += 1
+        ORDER["ingredients"]["limejuice"] += 1
+
+    elif drinkName == "Cosmopolitan":
+        ORDER["ingredients"]["vodka"] += 2
+        ORDER["ingredients"]["cointreau"] += 1
+        ORDER["ingredients"]["limejuice"] += 1
+        ORDER["ingredients"]["cranberryjuice"] += 1
+
+    elif drinkName == "Negroni":
+        ORDER["ingredients"]["gin"] += 1
+        ORDER["ingredients"]["campari"] += 1
+        ORDER["ingredients"]["vermouth"] += 1
+
+    elif drinkName == "MoscowMule":
+        ORDER["ingredients"]["vodka"] += 2
+        ORDER["ingredients"]["gingerbeer"] += 5
+        ORDER["ingredients"]["limejuice"] += 1
+
+    elif drinkName == "Martini":
+        ORDER["ingredients"]["gin"] += 3
+        ORDER["ingredients"]["vermouth"] += 1
+
+    elif drinkName == "Mojito":
+        ORDER["ingredients"]["rum"] += 2
+        ORDER["ingredients"]["limejuice"] += 1
+        ORDER["ingredients"]["simplesyrup"] += 2
+
+    elif drinkName == "WhiskeySour":
+        ORDER["ingredients"]["whiskey"] += 2
+        ORDER["ingredients"]["lemonjuice"] += 1
+
+    elif drinkName == "Manhattan":
+        ORDER["ingredients"]["whiskey"] += 2
+        ORDER["ingredients"]["vermouth"] += 1
+        ORDER["ingredients"]["bitters"] += 1
+
+    elif drinkName == "Daiquiri":
+        ORDER["ingredients"]["rum"] += 2
+        ORDER["ingredients"]["simplesyrup"] += 2
+        ORDER["ingredients"]["limejuice"] += 2
+
+    print(ORDER)
 
 
 if __name__ == "__main__":
@@ -379,19 +449,31 @@ if __name__ == "__main__":
         image=cosIm,
         compound=TOP,
         text="Cosmopolitan",
-        command=cosmopolitanMaker,
+        command=(lambda: addToOrder("Cosmopolitan")),
     ).grid(row=0, column=1, sticky="ew")
 
-    daqButton = Button(window, text="Daquiri", image=daquiIm, compound=TOP).grid(
-        row=0, column=2, sticky="ew"
-    )
-    manButton = Button(window, text="Manhattan", image=manhatIm, compound=TOP).grid(
-        row=0, column=3, sticky="ew"
-    )
+    daqButton = Button(
+        window,
+        text="Daquiri",
+        image=daquiIm,
+        compound=TOP,
+        command=(lambda: addToOrder("Daiquiri")),
+    ).grid(row=0, column=2, sticky="ew")
+    manButton = Button(
+        window,
+        text="Manhattan",
+        image=manhatIm,
+        compound=TOP,
+        command=(lambda: addToOrder("Manhattan")),
+    ).grid(row=0, column=3, sticky="ew")
 
-    margButton = Button(window, text="Margarita", image=margaIm, compound=TOP).grid(
-        row=0, column=4, sticky="ew"
-    )
+    margButton = Button(
+        window,
+        text="Margarita",
+        image=margaIm,
+        compound=TOP,
+        command=(lambda: addToOrder("Margarita")),
+    ).grid(row=0, column=4, sticky="ew")
 
     # Drink buttons row 2
     martButton = Button(
@@ -399,27 +481,49 @@ if __name__ == "__main__":
         image=martiIm,
         compound=TOP,
         text="Martini",
-        command=cosmopolitanMaker,
+        command=(lambda: addToOrder("Martini")),
     ).grid(row=1, column=1, sticky="ew")
 
-    mojButton = Button(window, text="Mojito", image=daquiIm, compound=TOP).grid(
-        row=1, column=2, sticky="ew"
-    )
-    negroniButton = Button(window, text="Negroni", image=negroniIm, compound=TOP).grid(
-        row=1, column=3, sticky="ew"
-    )
+    mojButton = Button(
+        window,
+        text="Mojito",
+        image=daquiIm,
+        compound=TOP,
+        command=(lambda: addToOrder("Mojito")),
+    ).grid(row=1, column=2, sticky="ew")
 
-    moscButton = Button(window, text="Moscow Mule", image=moscoIm, compound=TOP).grid(
-        row=1, column=4, sticky="ew"
-    )
+    negroniButton = Button(
+        window,
+        text="Negroni",
+        image=negroniIm,
+        compound=TOP,
+        command=(lambda: addToOrder("Negroni")),
+    ).grid(row=1, column=3, sticky="ew")
+
+    moscButton = Button(
+        window,
+        text="Moscow Mule",
+        image=moscoIm,
+        compound=TOP,
+        command=(lambda: addToOrder("MoscowMule")),
+    ).grid(row=1, column=4, sticky="ew")
 
     # Drink buttons row 3
-    mojButton = Button(window, text="Mojito", image=oldfIm, compound=TOP).grid(
-        row=2, column=1, sticky="ew"
-    )
-    negroniButton = Button(window, text="Negroni", image=whiskIm, compound=TOP).grid(
-        row=2, column=2, sticky="ew"
-    )
+    mojButton = Button(
+        window,
+        text="Mojito",
+        image=oldfIm,
+        compound=TOP,
+        command=(lambda: addToOrder("Mojito")),
+    ).grid(row=2, column=1, sticky="ew")
+
+    negroniButton = Button(
+        window,
+        text="Negroni",
+        image=whiskIm,
+        compound=TOP,
+        command=(lambda: addToOrder("Negroni")),
+    ).grid(row=2, column=2, sticky="ew")
 
     # Clock in Button
     clockIn = Button(window, text="Clock In", command=clockIn).grid(
