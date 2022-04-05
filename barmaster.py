@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk, messagebox
 from functools import partial
 from datetime import datetime
+from PIL import ImageTk, Image
 import random
 
 
@@ -32,20 +33,25 @@ Create Window Function: create_window()
 """
 
 
-def createWindow():
+def createWindow(width, height):
 
     window = Tk()
     window.title("BarMaster POS")
-    window.geometry("1200x480")
+    window.geometry(str(width) + "x" + str(height))
 
     return window
 
 
-def changeClock(empid):
+def changeClock(empid, window):
     login = empid.get()
     if BARSTORAGE["employees"][login]["onClock"] == 0:
         BARSTORAGE["employees"][login]["onClock"] = 1
         BARSTORAGE["employees"][login]["clockin"] = datetime.now()
+        window.destroy()
+        clockinWindow = createWindow(100, 100)
+        clockinSuccess = Label(clockinWindow, text="Successful clockin").grid(
+            row=0, column=0
+        )
     else:
         BARSTORAGE["employees"][login]["onClock"] = 0
         clockinTime = BARSTORAGE["employees"][login]["clockin"]
@@ -53,10 +59,16 @@ def changeClock(empid):
         seconds = difference.total_seconds()
         differenceInHours = seconds / 3600
         BARSTORAGE["employees"][login]["hours"] += differenceInHours
+        window.destroy()
+        clockoutWindow = createWindow(400, 100)
+        clockoutSuccess = Label(
+            clockoutWindow,
+            text=f"Successful clockout, hours worked: {differenceInHours}",
+        ).grid(row=0, column=0)
 
 
 def clockIn():
-    clockinWindow = createWindow()
+    clockinWindow = createWindow(100, 100)
     loginIDLabel = Label(clockinWindow, text="Employee ID: ").grid(row=0, column=0)
     loginID = Entry(clockinWindow)
     loginID.grid(row=0, column=1)
@@ -64,13 +76,13 @@ def clockIn():
     clockinButton = Button(
         clockinWindow,
         text="Clock In",
-        command=(lambda: changeClock(loginID)),
+        command=(lambda: changeClock(loginID, clockinWindow)),
     )
     clockinButton.grid(row=1, column=0)
 
 
 def clockOut():
-    clockoutWindow = createWindow()
+    clockoutWindow = createWindow(100, 100)
     loginIDLabel = Label(clockoutWindow, text="Employee ID: ").grid(row=0, column=0)
     loginID = Entry(clockoutWindow)
     loginID.grid(row=0, column=1)
@@ -78,7 +90,7 @@ def clockOut():
     clockoutButton = Button(
         clockoutWindow,
         text="Clock Out",
-        command=(lambda: changeClock(loginID)),
+        command=(lambda: changeClock(loginID, clockoutWindow)),
     )
     clockoutButton.grid(row=1, column=0)
 
@@ -97,6 +109,74 @@ def displaySales():
 
 def repeatOrder():
     return 1
+
+
+"""
+Phone Formatting Function: phoneFormat()
+    - This function is responsible for checking to see if the phone number entered by the user is in the proper format
+    - This function takes in a string "p", and checks to make sure there are correct "-" characters in the correct positions for a phone number
+        - if in good format, returns True
+"""
+
+
+def phoneFormat(p):
+    # format: ### - ### - ####
+    if len(p.get()) == 12 and p.get()[3] == "-" and p.get()[7] == "-":
+        return True
+    else:
+        return False
+
+
+"""
+Filter Bad Characters Function: catchBadChar()
+    - This function is responsible for the detection of forbidden characters in the entries made by the user
+    - This function takes in a string, and compares each character of that string, against each forbidden character, and if there
+       is no match, it moves on to the next character in the passed string.
+"""
+
+
+def catchBadChar(testString):
+    symbols = {
+        "~",
+        ":",
+        "'",
+        "+",
+        "[",
+        "\\",
+        "@",
+        "^",
+        "{",
+        "%",
+        "(",
+        '"',
+        "*",
+        "|",
+        ",",
+        "&",
+        "<",
+        "`",
+        "}",
+        ".",
+        "_",
+        "=",
+        "]",
+        "!",
+        ">",
+        ";",
+        "?",
+        "#",
+        "$",
+        ")",
+        "/",
+    }
+    flag = True
+
+    for character in testString:
+        for badChar in symbols:
+            if character == badChar:
+                flag = False
+
+    return flag
 
 
 """
@@ -121,26 +201,59 @@ def generateEmpId():
 
 
 def commitEmployee(efname, elname, eemail, ephone, empWindow):
+    add_flag = 1
     newEmployeeFirstName = efname.get()
     newEmployeeLastName = elname.get()
     newEmployeeEmail = eemail.get()
     newEmployeePhone = ephone.get()
     newEmployeeID = generateEmpId()
 
-    BARSTORAGE["employees"][newEmployeeID] = {
-        "empid": newEmployeeID,
-        "fname": newEmployeeFirstName,
-        "lname": newEmployeeLastName,
-        "email": newEmployeeEmail,
-        "phone": newEmployeePhone,
-        "hours": 0.0,
-        "onClock": 0,
-        "clockin": datetime.now(),
-    }
+    if efname.get() == "":
+        Label(empWindow, text="Empty Field").grid(row=0, column=2)
+        add_flag = 0
+    else:
+        if catchBadChar(efname.get()):
+            add_flag = 1
+        else:
+            Label(empWindow, text="Forbidden Character Detected").grid(row=0, column=2)
 
-    print(BARSTORAGE["employees"])
+    if elname.get() == "":
+        Label(empWindow, text="Empty Field").grid(row=1, column=2)
+        add_flag = 0
+    else:
+        if catchBadChar(elname.get()):
+            add_flag = 1
+        else:
+            Label(empWindow, text="Forbidden Character Detected").grid(row=1, column=2)
+
+    if ephone.get() == "":
+        Label(empWindow, text="Empty Field").grid(row=3, column=2)
+        add_flag = 0
+    else:
+        if phoneFormat(ephone) == 0:
+            Label(empWindow, text="Invalid Phone Number").grid(row=3, column=2)
+            add_flag = 0
+        elif catchBadChar(ephone.get()) == 0:
+            add_flag = 0
+        else:
+            Label(empWindow, text="Forbidden Character Detected").grid(row=3, column=2)
+    if add_flag:
+        BARSTORAGE["employees"][newEmployeeID] = {
+            "empid": newEmployeeID,
+            "fname": newEmployeeFirstName,
+            "lname": newEmployeeLastName,
+            "email": newEmployeeEmail,
+            "phone": newEmployeePhone,
+            "hours": 0.0,
+            "onClock": 0,
+            "clockin": datetime.now(),
+        }
+
+    else:
+        return 0
     empWindow.destroy()
     generateEmployee()
+    print(BARSTORAGE["employees"])
 
 
 def deleteEmployee(empid, empwindow):
@@ -150,7 +263,7 @@ def deleteEmployee(empid, empwindow):
 
 
 def generateEmployee():
-    empWindow = createWindow()
+    empWindow = createWindow(800, 600)
 
     fnameLabel = Label(empWindow, text="First Name:").grid(row=0, column=0)
     lnameLabel = Label(empWindow, text="Last Name:").grid(row=1, column=0)
@@ -215,7 +328,7 @@ def generateEmployee():
             row=rowTracker, column=4, sticky="ew"
         )
 
-        fname = Label(empWindow, text=employee["fname"]).grid(
+        ephone = Label(empWindow, text=employee["phone"]).grid(
             row=rowTracker, column=5, sticky="ew"
         )
 
@@ -228,34 +341,117 @@ def generateEmployee():
     empWindow.mainloop()
 
 
+def cosmopolitanMaker():
+    return 1
+
+
 if __name__ == "__main__":
 
-    window = createWindow()
+    window = createWindow(1200, 1000)
 
+    # Creating PhotoImage objects from the drink images
+    cosImg = PhotoImage(file="drinkphotos/coffee.png")
+    daqIm = PhotoImage(file="drinkphotos/coffee.png")
+    manIm = PhotoImage(file="drinkphotos/coffee.png")
+    margIm = PhotoImage(file="drinkphotos/coffee.png")
+    martIm = PhotoImage(file="drinkphotos/coffee.png")
+    mojIm = PhotoImage(file="drinkphotos/coffee.png")
+    mosIm = PhotoImage(file="drinkphotos/coffee.png")
+    negIm = PhotoImage(file="drinkphotos/coffee.png")
+    olfIm = PhotoImage(file="drinkphotos/coffee.png")
+    wsrIm = PhotoImage(file="drinkphotos/coffee.png")
+
+    # Resizing the PhotoImage objects
+    cosIm = cosImg.subsample(5, 5)
+    daquiIm = daqIm.subsample(5, 5)
+    manhatIm = manIm.subsample(5, 5)
+    margaIm = margIm.subsample(5, 5)
+    martiIm = martIm.subsample(5, 5)
+    mojiIm = mojIm.subsample(5, 5)
+    moscoIm = mosIm.subsample(5, 5)
+    negroniIm = negIm.subsample(5, 5)
+    oldfIm = olfIm.subsample(5, 5)
+    whiskIm = wsrIm.subsample(5, 5)
+
+    # Drink buttons row 1
+    cosmoButton = Button(
+        window,
+        image=cosIm,
+        compound=TOP,
+        text="Cosmopolitan",
+        command=cosmopolitanMaker,
+    ).grid(row=0, column=1, sticky="ew")
+
+    daqButton = Button(window, text="Daquiri", image=daquiIm, compound=TOP).grid(
+        row=0, column=2, sticky="ew"
+    )
+    manButton = Button(window, text="Manhattan", image=manhatIm, compound=TOP).grid(
+        row=0, column=3, sticky="ew"
+    )
+
+    margButton = Button(window, text="Margarita", image=margaIm, compound=TOP).grid(
+        row=0, column=4, sticky="ew"
+    )
+
+    # Drink buttons row 2
+    martButton = Button(
+        window,
+        image=martiIm,
+        compound=TOP,
+        text="Martini",
+        command=cosmopolitanMaker,
+    ).grid(row=1, column=1, sticky="ew")
+
+    mojButton = Button(window, text="Mojito", image=daquiIm, compound=TOP).grid(
+        row=1, column=2, sticky="ew"
+    )
+    negroniButton = Button(window, text="Negroni", image=negroniIm, compound=TOP).grid(
+        row=1, column=3, sticky="ew"
+    )
+
+    moscButton = Button(window, text="Moscow Mule", image=moscoIm, compound=TOP).grid(
+        row=1, column=4, sticky="ew"
+    )
+
+    # Drink buttons row 3
+    mojButton = Button(window, text="Mojito", image=oldfIm, compound=TOP).grid(
+        row=2, column=1, sticky="ew"
+    )
+    negroniButton = Button(window, text="Negroni", image=whiskIm, compound=TOP).grid(
+        row=2, column=2, sticky="ew"
+    )
+
+    # Clock in Button
     clockIn = Button(window, text="Clock In", command=clockIn).grid(
         row=0, column=0, sticky="ew"
     )
 
+    # Clock out Button
     clockOut = Button(window, text="Clock Out", command=clockOut).grid(
         row=1, column=0, sticky="ew"
     )
 
+    # Display Inventory Button
     viewInventory = Button(
         window, text="View Inventory", command=displayInventory
     ).grid(row=2, column=0, sticky="ew")
 
+    # Add to Inventory Button
     fillInventory = Button(window, text="Add to Inventory", command=addInventory).grid(
         row=3, column=0, sticky="ew"
     )
 
+    # View Sales Button
     viewSales = Button(window, text="View Sales", command=displaySales).grid(
         row=4, column=0, sticky="ew"
     )
 
+    # Reorder Button
     reorder = Button(window, text="Repeat Last Order", command=repeatOrder).grid(
         row=5, column=0, sticky="ew"
     )
 
+    # Edit Employee List Button
     addEmployee = Button(window, text="Edit Employee", command=generateEmployee).grid(
         row=6, column=0, sticky="ew"
     )
