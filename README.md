@@ -23,3 +23,13 @@ Questions:
 ==========
 	- Do we need to be able to add to the inventory? Answer: Yes
 	- Do we need to track sales? Answer: Yes
+
+
+Bar Master Features:
+====================
+	- Employees
+		- add a new employee
+		- delete existing employee
+		- employee clock-in/out
+		- employee hours worked storage
+		
