@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk, messagebox
 from functools import partial
+from datetime import datetime
 import random
 
 
@@ -41,13 +42,24 @@ def createWindow():
 
 
 def changeClock(empid):
-    return 1
+    login = empid.get()
+    if BARSTORAGE["employees"][login]["onClock"] == 0:
+        BARSTORAGE["employees"][login]["onClock"] = 1
+        BARSTORAGE["employees"][login]["clockin"] = datetime.now()
+    else:
+        BARSTORAGE["employees"][login]["onClock"] = 0
+        clockinTime = BARSTORAGE["employees"][login]["clockin"]
+        difference = datetime.now() - clockinTime
+        seconds = difference.total_seconds()
+        differenceInHours = seconds / 3600
+        BARSTORAGE["employees"][login]["hours"] += differenceInHours
 
 
 def clockIn():
     clockinWindow = createWindow()
     loginIDLabel = Label(clockinWindow, text="Employee ID: ").grid(row=0, column=0)
-    loginID = Entry(clockinWindow).grid(row=0, column=1)
+    loginID = Entry(clockinWindow)
+    loginID.grid(row=0, column=1)
 
     clockinButton = Button(
         clockinWindow,
@@ -60,7 +72,8 @@ def clockIn():
 def clockOut():
     clockoutWindow = createWindow()
     loginIDLabel = Label(clockoutWindow, text="Employee ID: ").grid(row=0, column=0)
-    loginID = Entry(clockoutWindow).grid(row=0, column=1)
+    loginID = Entry(clockoutWindow)
+    loginID.grid(row=0, column=1)
 
     clockoutButton = Button(
         clockoutWindow,
@@ -120,8 +133,9 @@ def commitEmployee(efname, elname, eemail, ephone, empWindow):
         "lname": newEmployeeLastName,
         "email": newEmployeeEmail,
         "phone": newEmployeePhone,
-        "hours": 0,
+        "hours": 0.0,
         "onClock": 0,
+        "clockin": datetime.now(),
     }
 
     print(BARSTORAGE["employees"])
@@ -129,8 +143,10 @@ def commitEmployee(efname, elname, eemail, ephone, empWindow):
     generateEmployee()
 
 
-def deleteEmployee():
-    return 1
+def deleteEmployee(empid, empwindow):
+    BARSTORAGE["employees"].pop(empid)
+    empwindow.destroy()
+    generateEmployee()
 
 
 def generateEmployee():
@@ -167,6 +183,7 @@ def generateEmployee():
     header3 = Label(empWindow, text="Last Name").grid(row=5, column=3, sticky="ew")
     header4 = Label(empWindow, text="Email Address").grid(row=5, column=4, sticky="ew")
     header5 = Label(empWindow, text="Phone Number").grid(row=5, column=5, sticky="ew")
+    header6 = Label(empWindow, text="Hours").grid(row=5, column=6, sticky="ew")
 
     employees = BARSTORAGE["employees"]
 
@@ -175,7 +192,11 @@ def generateEmployee():
     for employeeID in employees:
         employee = employees[employeeID]
 
-        deleteButton = Button(empWindow, text="Delete", command=deleteEmployee)
+        deleteButton = Button(
+            empWindow,
+            text="Delete",
+            command=(lambda: deleteEmployee(employee["empid"], empWindow)),
+        )
         deleteButton.grid(row=rowTracker, column=0)
 
         id = Label(empWindow, text=employee["empid"]).grid(
@@ -196,6 +217,10 @@ def generateEmployee():
 
         fname = Label(empWindow, text=employee["fname"]).grid(
             row=rowTracker, column=5, sticky="ew"
+        )
+
+        hours = Label(empWindow, text=employee["hours"]).grid(
+            row=rowTracker, column=6, sticky="ew"
         )
 
         rowTracker += 1
