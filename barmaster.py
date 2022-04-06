@@ -4,9 +4,10 @@ from functools import partial
 from datetime import datetime
 from PIL import ImageTk, Image
 from collections import Counter
+import pickle
 import random
 
-
+# Global variable for the storage of necessary bar details
 BARSTORAGE = {
     "ingredients": {
         "vodka": 125,
@@ -26,9 +27,10 @@ BARSTORAGE = {
         "lemonjuice": 125,
     },
     "employees": {},
-    "sales": {},
+    "sales": [],
 }
 
+# Global variable for the storage of an order
 ORDER = {
     "ingredients": {
         "vodka": 0,
@@ -51,6 +53,7 @@ ORDER = {
     "drinks": [],
 }
 
+
 """
 Create Window Function: create_window()
     This function is responsible for the generation of the tkinter "Window" object, which is returned by this function
@@ -64,6 +67,16 @@ def createWindow(width, height):
     window.geometry(str(width) + "x" + str(height))
 
     return window
+
+
+"""
+Swap the clock value function: changeClock():
+
+Resposible for changing the "is clocked in" value
+    - if 0, then change to 1 and add a new timestamp for the clock in
+    - if 1, then change to 0 and add the difference between now and clockin timestamp
+      to the employee's hours worked
+"""
 
 
 def changeClock(empid, window):
@@ -91,6 +104,16 @@ def changeClock(empid, window):
         ).grid(row=0, column=0)
 
 
+"""
+Clocking in button function: clockIn()
+
+This is the function that is triggered when the clock in button is pressed
+    - Allows employee to enter their id, then press the clock in button
+    - pops up a success window upon a successful clockin
+    - calls the changeClock() function to do the actual clock changing
+"""
+
+
 def clockIn():
     clockinWindow = createWindow(100, 100)
     loginIDLabel = Label(clockinWindow, text="Employee ID: ").grid(row=0, column=0)
@@ -103,6 +126,16 @@ def clockIn():
         command=(lambda: changeClock(loginID, clockinWindow)),
     )
     clockinButton.grid(row=1, column=0)
+
+
+"""
+Clocking out button function: clockIn()
+
+This is the function that is triggered when the clock in button is pressed
+    - Allows employee to enter their id, then press the clock out button
+    - pops up a success window upon a successful clockout
+    - calls the changeClock() function to do the actual clock changing
+"""
 
 
 def clockOut():
@@ -119,9 +152,24 @@ def clockOut():
     clockoutButton.grid(row=1, column=0)
 
 
+"""
+Inventory Display: displayInventory()
+
+This function is triggered when the "display inventory" button is pressed
+    - displays all current values of the inventory
+    - allows a user to add to the inventory
+    - calls the addInventory() function with the item and amount to do the actual adding
+"""
+
+
 def displayInventory():
     inventoryWindow = createWindow(500, 500)
     counter = 0
+
+    amountLabel = Label(inventoryWindow, text="Amount to add").grid(row=0, column=3)
+    amountAdded = Entry(inventoryWindow)
+    amountAdded.grid(row=1, column=3)
+
     for ingredient in BARSTORAGE["ingredients"]:
         ingredientLabel = Label(inventoryWindow, text=ingredient).grid(
             row=counter, column=0
@@ -131,28 +179,226 @@ def displayInventory():
             inventoryWindow, text=f"{BARSTORAGE['ingredients'][ingredient]} oz"
         ).grid(row=counter, column=1)
 
-        # Add to Inventory Button
-        fillInventory = Button(
-            inventoryWindow,
-            text="Add to Inventory",
-            command=(lambda: addInventory(ingredient)),
-        ).grid(row=counter, column=2, sticky="ew")
-
         counter += 1
 
+    # Add to inventory buttons
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("vodka", amountAdded, inventoryWindow)),
+    ).grid(row=0, column=2, sticky="ew")
 
-def addInventory(ingredient):
-    return 1
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("bourbon", amountAdded, inventoryWindow)),
+    ).grid(row=1, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("bitters", amountAdded, inventoryWindow)),
+    ).grid(row=2, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("tequila", amountAdded, inventoryWindow)),
+    ).grid(row=3, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("cointreau", amountAdded, inventoryWindow)),
+    ).grid(row=4, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("limejuice", amountAdded, inventoryWindow)),
+    ).grid(row=5, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("cranberryjuice", amountAdded, inventoryWindow)),
+    ).grid(row=6, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("gin", amountAdded, inventoryWindow)),
+    ).grid(row=7, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("campari", amountAdded, inventoryWindow)),
+    ).grid(row=8, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("vermouth", amountAdded, inventoryWindow)),
+    ).grid(row=9, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("gingerbeer", amountAdded, inventoryWindow)),
+    ).grid(row=10, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("rum", amountAdded, inventoryWindow)),
+    ).grid(row=11, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("whiskey", amountAdded, inventoryWindow)),
+    ).grid(row=12, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("simplesyrup", amountAdded, inventoryWindow)),
+    ).grid(row=13, column=2, sticky="ew")
+
+    fillInventory = Button(
+        inventoryWindow,
+        text="Add to Stock",
+        command=(lambda: addInventory("lemonjuice", amountAdded, inventoryWindow)),
+    ).grid(row=14, column=2, sticky="ew")
+
+
+"""
+Add to inventory button: addInventory()
+
+This function is called by the "add to inventory" button in the inventory display
+    - adds the called for amount to the BARSTORAGE inventory
+
+"""
+
+
+def addInventory(ingredient, amountToAdd, invWindow):
+    amount = int(amountToAdd.get())
+    print(amount)
+    BARSTORAGE["ingredients"][ingredient] += amount
+
+    displayInventory()
+
+
+"""
+Sales Display: displaySales()
+
+This function is called when the "display sales" button is pressed
+    - displays all the sales history of the bar
+    - shows the employee who sold it, the id of the sale, and what was sold
+"""
 
 
 def displaySales():
     salesWindow = createWindow(400, 400)
     rowCounter = 0
     for sale in BARSTORAGE["sales"]:
-        saleLabel = Label(salesWindow, text=f"{sale} {BARSTORAGE['sales'][sale]}").grid(
-            row=rowCounter, column=0
-        )
+        # saleLabel = Label(salesWindow, text=f"{sale} {BARSTORAGE['sales'][sale]}").grid(
+        #     row=rowCounter, column=0
+        # )
+
+        saleLabel = Label(salesWindow, text=f"{sale}").grid(row=rowCounter, column=0)
         rowCounter += 1
+
+
+"""
+Closing the Program Handler: on_closing()
+    - This function is responsible for handling the closing of the program, and it saves the employees added automatically prior to closing
+    - This function calls the saveFile() function to accomplish the saving of the information
+"""
+
+
+def on_closing():
+    if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        saveFile()
+        window.destroy()
+
+
+"""
+Open Pickle File Function: openFile()
+    - This function is responsible for opening the pickle file which stores all of the past added employees
+    - If no file exists, or the file is empty, one is created, and the storage variable is initialized as empty
+    - If the file exists, and contains employees, then those employees are added to the storage variable while the program is running
+"""
+
+
+def openFile(storage):
+    try:
+        with open("barData.pickle", "rb") as barData:
+            data = pickle.load(barData)
+            for field in data:
+                storage[field] = data[field]
+
+    except EOFError:
+        BARSTORAGE = {
+            "ingredients": {
+                "vodka": 125,
+                "bourbon": 125,
+                "bitters": 125,
+                "tequila": 125,
+                "cointreau": 125,
+                "limejuice": 125,
+                "cranberryjuice": 125,
+                "gin": 125,
+                "campari": 125,
+                "vermouth": 125,
+                "gingerbeer": 125,
+                "rum": 125,
+                "whiskey": 125,
+                "simplesyrup": 125,
+                "lemonjuice": 125,
+            },
+            "employees": {},
+            "sales": {},
+        }
+
+    except FileNotFoundError:
+        BARSTORAGE = {
+            "ingredients": {
+                "vodka": 125,
+                "bourbon": 125,
+                "bitters": 125,
+                "tequila": 125,
+                "cointreau": 125,
+                "limejuice": 125,
+                "cranberryjuice": 125,
+                "gin": 125,
+                "campari": 125,
+                "vermouth": 125,
+                "gingerbeer": 125,
+                "rum": 125,
+                "whiskey": 125,
+                "simplesyrup": 125,
+                "lemonjuice": 125,
+            },
+            "employees": {},
+            "sales": {},
+        }
+        with open("barData.pickle", "wb") as employees:
+            pickle.dump(BARSTORAGE, employees)
+
+
+"""
+Save to Pickle File Function: saveFile()
+    - This function is responsible for saving what is in the storage variable, into the pickle file
+    - This function overwrites what is in the pickle file, which is why the open funtion loads the current information in the file
+       into the storage variable prior to the addition of new employees, it actually happens on opening
+"""
+
+
+def saveFile():
+    with open("barData.pickle", "wb") as employees:
+        pickle.dump(BARSTORAGE, employees)
 
 
 """
@@ -244,6 +490,15 @@ def generateEmpId():
     return empid
 
 
+"""
+Saving New Employee Function: commitEmployee()
+
+This function takes in the new employee details
+    - checks the details to make sure they are valid (special char, blank, etc)
+    - adds the new employee to the BARSTORAGE employees field if valid
+"""
+
+
 def commitEmployee(efname, elname, eemail, ephone, empWindow):
     add_flag = 1
     newEmployeeFirstName = efname.get()
@@ -300,10 +555,27 @@ def commitEmployee(efname, elname, eemail, ephone, empWindow):
     print(BARSTORAGE["employees"])
 
 
+"""
+Employee Deletion: deleteEmployee()
+
+This function is triggered when the delete button next to the employee on the edit page is pressed
+    - deletes the employee from the BARSTORAGE
+"""
+
+
 def deleteEmployee(empid, empwindow):
     BARSTORAGE["employees"].pop(empid)
     empwindow.destroy()
     generateEmployee()
+
+
+"""
+Employee Edit Portal Function: generateEmployee()
+
+This function is triggered when the "edit employees" button is pressed
+    - creates the window/portal for employee editing
+
+"""
 
 
 def generateEmployee():
@@ -385,33 +657,52 @@ def generateEmployee():
     empWindow.mainloop()
 
 
-def repeatOrder():
-    return 1
+"""
+Repeat Last Order Function: repeatOrder()
+
+This function takes the last order placed, and adds it to the sales history again
+    - adds new sale id for the sale
+    - requires a valid employee id to repeat just like the initial sale
+"""
+
+
+def repeatOrder(idCheck):
+    add_flag = 1
+
+    lastval = len(BARSTORAGE["sales"]) - 1
+    saleid = generateEmpId()
+    empid = BARSTORAGE["sales"][lastval]["employee"]
+    drinks = BARSTORAGE["sales"][lastval]["drinks"]
+
+    if idCheck.get() == "":
+        Label(window, text="Empty Field").grid(row=7, column=4)
+        add_flag = 0
+    elif idCheck.get() not in BARSTORAGE["employees"].keys():
+        add_flag = 0
+        Label(window, text="Not an employee!").grid(row=7, column=4)
+    else:
+        if catchBadChar(idCheck.get()):
+            add_flag = 1
+        else:
+            Label(window, text="Forbidden Character Detected").grid(row=7, column=4)
+            add_flag = 0
+
+    if add_flag:
+
+        BARSTORAGE["sales"].append(
+            {"saleID": saleid, "employee": empid, "drinks": drinks}
+        )
+
+
+"""
+Clear ORDER on Submission: clearOrder()
+
+This function is responsible for clearing out the global ORDER variable when the order is placed
+    - gets it ready for the next order
+"""
 
 
 def clearOrder(window):
-    # ORDER = {
-    #     "ingredients": {
-    #         "vodka": 0,
-    #         "bourbon": 0,
-    #         "bitters": 0,
-    #         "tequila": 0,
-    #         "cointreau": 0,
-    #         "limejuice": 0,
-    #         "cranberryjuice": 0,
-    #         "gin": 0,
-    #         "campari": 0,
-    #         "vermouth": 0,
-    #         "gingerbeer": 0,
-    #         "rum": 0,
-    #         "whiskey": 0,
-    #         "simplesyrup": 0,
-    #         "lemonjuice": 0,
-    #     },
-    #     "server": "",
-    #     "drinks": [],
-    # }
-
     for ingredient in ORDER["ingredients"]:
         ORDER["ingredients"][ingredient] = 0
 
@@ -419,6 +710,14 @@ def clearOrder(window):
     ORDER["drinks"] = []
 
     updateOrderDisplay(window)
+
+
+"""
+Order Submission: placeOrder()
+
+This function is what actually adds the order to the BARSTORAGE
+    - requires a valid employee id to submit
+"""
 
 
 def placeOrder(window, empid):
@@ -444,13 +743,20 @@ def placeOrder(window, empid):
             add_flag = 0
 
     if add_flag:
-        BARSTORAGE["sales"][saleid] = {
-            "employee": empid.get(),
-            "drinks": ORDER["drinks"],
-        }
+        BARSTORAGE["sales"].append(
+            {"saleID": saleid, "employee": empid.get(), "drinks": ORDER["drinks"]}
+        )
 
+        LASTORDER = ORDER
         print(BARSTORAGE["sales"])
         clearOrder(window)
+
+
+"""
+Current Order Display: updateOrderDisplay()
+
+This function prints out the contents of the current order along with their values to the main page
+"""
 
 
 def updateOrderDisplay(window):
@@ -463,6 +769,13 @@ def updateOrderDisplay(window):
             row=rowCounter, column=2
         )
         rowCounter += 1
+
+
+"""
+Add a drink to order: addToOrder()
+
+This function adds the drink, and its ingredients to the current ORDER
+"""
 
 
 def addToOrder(drinkName, window):
@@ -540,6 +853,7 @@ def addToOrder(drinkName, window):
 if __name__ == "__main__":
 
     window = createWindow(1300, 1100)
+    openFile(BARSTORAGE)
 
     # Creating PhotoImage objects from the drink images
     cosImg = PhotoImage(file="drinkphotos/coffee.png")
@@ -650,27 +964,27 @@ if __name__ == "__main__":
 
     # Clock in Button
     clockIn = Button(window, text="Clock In", command=clockIn).grid(
-        row=4, column=0, sticky="ew"
+        row=5, column=0, sticky="ew"
     )
 
     # Clock out Button
     clockOut = Button(window, text="Clock Out", command=clockOut).grid(
-        row=5, column=0, sticky="ew"
+        row=6, column=0, sticky="ew"
     )
 
     # Display Inventory Button
     viewInventory = Button(
         window, text="View Inventory", command=displayInventory
-    ).grid(row=6, column=0, sticky="ew")
+    ).grid(row=7, column=0, sticky="ew")
 
     # View Sales Button
     viewSales = Button(window, text="View Sales", command=displaySales).grid(
-        row=7, column=0, sticky="ew"
+        row=8, column=0, sticky="ew"
     )
 
     # Edit Employee List Button
     addEmployee = Button(window, text="Edit Employee", command=generateEmployee).grid(
-        row=8, column=0, sticky="ew"
+        row=9, column=0, sticky="ew"
     )
 
     header1 = Label(window, text="Drink").grid(row=4, column=1)
@@ -683,8 +997,10 @@ if __name__ == "__main__":
     submitOrderButton = Button(
         window, text="Submit Order", command=(lambda: placeOrder(window, empIdEntry))
     ).grid(row=4, column=3)
-    reorderButton = Button(window, text="Repeat Order", command=repeatOrder).grid(
-        row=5, column=3
-    )
 
+    reorderButton = Button(
+        window, text="Repeat Order", command=(lambda: repeatOrder(empIdEntry))
+    ).grid(row=5, column=3)
+
+    window.protocol("WM_DELETE_WINDOW", on_closing)
     window.mainloop()
