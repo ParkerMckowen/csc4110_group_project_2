@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from functools import partial
 from datetime import datetime
 from PIL import ImageTk, Image
+from collections import Counter
 import random
 
 
@@ -25,6 +26,29 @@ BARSTORAGE = {
         "lemonjuice": 125,
     },
     "employees": {},
+    "sales": {},
+}
+
+ORDER = {
+    "ingredients": {
+        "vodka": 0,
+        "bourbon": 0,
+        "bitters": 0,
+        "tequila": 0,
+        "cointreau": 0,
+        "limejuice": 0,
+        "cranberryjuice": 0,
+        "gin": 0,
+        "campari": 0,
+        "vermouth": 0,
+        "gingerbeer": 0,
+        "rum": 0,
+        "whiskey": 0,
+        "simplesyrup": 0,
+        "lemonjuice": 0,
+    },
+    "server": "",
+    "drinks": [],
 }
 
 """
@@ -96,19 +120,39 @@ def clockOut():
 
 
 def displayInventory():
-    return 1
+    inventoryWindow = createWindow(500, 500)
+    counter = 0
+    for ingredient in BARSTORAGE["ingredients"]:
+        ingredientLabel = Label(inventoryWindow, text=ingredient).grid(
+            row=counter, column=0
+        )
+
+        ingredientQuantity = Label(
+            inventoryWindow, text=f"{BARSTORAGE['ingredients'][ingredient]} oz"
+        ).grid(row=counter, column=1)
+
+        # Add to Inventory Button
+        fillInventory = Button(
+            inventoryWindow,
+            text="Add to Inventory",
+            command=(lambda: addInventory(ingredient)),
+        ).grid(row=counter, column=2, sticky="ew")
+
+        counter += 1
 
 
-def addInventory():
+def addInventory(ingredient):
     return 1
 
 
 def displaySales():
-    return 1
-
-
-def repeatOrder():
-    return 1
+    salesWindow = createWindow(400, 400)
+    rowCounter = 0
+    for sale in BARSTORAGE["sales"]:
+        saleLabel = Label(salesWindow, text=f"{sale} {BARSTORAGE['sales'][sale]}").grid(
+            row=rowCounter, column=0
+        )
+        rowCounter += 1
 
 
 """
@@ -341,83 +385,161 @@ def generateEmployee():
     empWindow.mainloop()
 
 
-ORDER = {
-    "ingredients": {
-        "vodka": 0,
-        "bourbon": 0,
-        "bitters": 0,
-        "tequila": 0,
-        "cointreau": 0,
-        "limejuice": 0,
-        "cranberryjuice": 0,
-        "gin": 0,
-        "campari": 0,
-        "vermouth": 0,
-        "gingerbeer": 0,
-        "rum": 0,
-        "whiskey": 0,
-        "simplesyrup": 0,
-        "lemonjuice": 0,
-    },
-    "server": "",
-}
+def repeatOrder():
+    return 1
 
 
-def addToOrder(drinkName):
+def clearOrder(window):
+    # ORDER = {
+    #     "ingredients": {
+    #         "vodka": 0,
+    #         "bourbon": 0,
+    #         "bitters": 0,
+    #         "tequila": 0,
+    #         "cointreau": 0,
+    #         "limejuice": 0,
+    #         "cranberryjuice": 0,
+    #         "gin": 0,
+    #         "campari": 0,
+    #         "vermouth": 0,
+    #         "gingerbeer": 0,
+    #         "rum": 0,
+    #         "whiskey": 0,
+    #         "simplesyrup": 0,
+    #         "lemonjuice": 0,
+    #     },
+    #     "server": "",
+    #     "drinks": [],
+    # }
+
+    for ingredient in ORDER["ingredients"]:
+        ORDER["ingredients"][ingredient] = 0
+
+    ORDER["server"] = ""
+    ORDER["drinks"] = []
+
+    updateOrderDisplay(window)
+
+
+def placeOrder(window, empid):
+    add_flag = 1
+
+    for ingredient in ORDER["ingredients"]:
+        pour = ORDER["ingredients"][ingredient]
+        BARSTORAGE["ingredients"][ingredient] -= pour
+
+    saleid = generateEmpId()
+
+    if empid.get() == "":
+        Label(window, text="Empty Field").grid(row=7, column=4)
+        add_flag = 0
+    elif empid.get() not in BARSTORAGE["employees"].keys():
+        add_flag = 0
+        Label(window, text="Not an employee!").grid(row=7, column=4)
+    else:
+        if catchBadChar(empid.get()):
+            add_flag = 1
+        else:
+            Label(window, text="Forbidden Character Detected").grid(row=7, column=4)
+            add_flag = 0
+
+    if add_flag:
+        BARSTORAGE["sales"][saleid] = {
+            "employee": empid.get(),
+            "drinks": ORDER["drinks"],
+        }
+
+        print(BARSTORAGE["sales"])
+        clearOrder(window)
+
+
+def updateOrderDisplay(window):
+    order = ORDER
+    rowCounter = 5
+    drinkCounts = Counter(order["drinks"])
+    for drink in drinkCounts:
+        drinkLabel = Label(window, text=f"{drink}").grid(row=rowCounter, column=1)
+        drinkCount = Label(window, text=f"{drinkCounts[drink]}").grid(
+            row=rowCounter, column=2
+        )
+        rowCounter += 1
+
+
+def addToOrder(drinkName, window):
     if drinkName == "OldFashioned":
         ORDER["ingredients"]["bourbon"] += 2
         ORDER["ingredients"]["bitters"] += 1
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "Margarita":
         ORDER["ingredients"]["tequila"] += 2
         ORDER["ingredients"]["cointreau"] += 1
         ORDER["ingredients"]["limejuice"] += 1
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "Cosmopolitan":
         ORDER["ingredients"]["vodka"] += 2
         ORDER["ingredients"]["cointreau"] += 1
         ORDER["ingredients"]["limejuice"] += 1
         ORDER["ingredients"]["cranberryjuice"] += 1
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "Negroni":
         ORDER["ingredients"]["gin"] += 1
         ORDER["ingredients"]["campari"] += 1
         ORDER["ingredients"]["vermouth"] += 1
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "MoscowMule":
         ORDER["ingredients"]["vodka"] += 2
         ORDER["ingredients"]["gingerbeer"] += 5
         ORDER["ingredients"]["limejuice"] += 1
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "Martini":
         ORDER["ingredients"]["gin"] += 3
         ORDER["ingredients"]["vermouth"] += 1
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "Mojito":
         ORDER["ingredients"]["rum"] += 2
         ORDER["ingredients"]["limejuice"] += 1
         ORDER["ingredients"]["simplesyrup"] += 2
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "WhiskeySour":
         ORDER["ingredients"]["whiskey"] += 2
         ORDER["ingredients"]["lemonjuice"] += 1
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "Manhattan":
         ORDER["ingredients"]["whiskey"] += 2
         ORDER["ingredients"]["vermouth"] += 1
         ORDER["ingredients"]["bitters"] += 1
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     elif drinkName == "Daiquiri":
         ORDER["ingredients"]["rum"] += 2
         ORDER["ingredients"]["simplesyrup"] += 2
         ORDER["ingredients"]["limejuice"] += 2
+        ORDER["drinks"].append(drinkName)
+        updateOrderDisplay(window)
 
     print(ORDER)
 
 
 if __name__ == "__main__":
 
-    window = createWindow(1200, 1000)
+    window = createWindow(1300, 1100)
 
     # Creating PhotoImage objects from the drink images
     cosImg = PhotoImage(file="drinkphotos/coffee.png")
@@ -449,31 +571,32 @@ if __name__ == "__main__":
         image=cosIm,
         compound=TOP,
         text="Cosmopolitan",
-        command=(lambda: addToOrder("Cosmopolitan")),
-    ).grid(row=0, column=1, sticky="ew")
+        command=(lambda: addToOrder("Cosmopolitan", window)),
+    ).grid(row=0, column=0, sticky="ew")
 
     daqButton = Button(
         window,
         text="Daquiri",
         image=daquiIm,
         compound=TOP,
-        command=(lambda: addToOrder("Daiquiri")),
-    ).grid(row=0, column=2, sticky="ew")
+        command=(lambda: addToOrder("Daiquiri", window)),
+    ).grid(row=0, column=1, sticky="ew")
+
     manButton = Button(
         window,
         text="Manhattan",
         image=manhatIm,
         compound=TOP,
-        command=(lambda: addToOrder("Manhattan")),
-    ).grid(row=0, column=3, sticky="ew")
+        command=(lambda: addToOrder("Manhattan", window)),
+    ).grid(row=0, column=2, sticky="ew")
 
     margButton = Button(
         window,
         text="Margarita",
         image=margaIm,
         compound=TOP,
-        command=(lambda: addToOrder("Margarita")),
-    ).grid(row=0, column=4, sticky="ew")
+        command=(lambda: addToOrder("Margarita", window)),
+    ).grid(row=0, column=3, sticky="ew")
 
     # Drink buttons row 2
     martButton = Button(
@@ -481,83 +604,87 @@ if __name__ == "__main__":
         image=martiIm,
         compound=TOP,
         text="Martini",
-        command=(lambda: addToOrder("Martini")),
-    ).grid(row=1, column=1, sticky="ew")
+        command=(lambda: addToOrder("Martini", window)),
+    ).grid(row=1, column=0, sticky="ew")
 
     mojButton = Button(
         window,
         text="Mojito",
         image=daquiIm,
         compound=TOP,
-        command=(lambda: addToOrder("Mojito")),
-    ).grid(row=1, column=2, sticky="ew")
+        command=(lambda: addToOrder("Mojito", window)),
+    ).grid(row=1, column=1, sticky="ew")
 
     negroniButton = Button(
         window,
         text="Negroni",
         image=negroniIm,
         compound=TOP,
-        command=(lambda: addToOrder("Negroni")),
-    ).grid(row=1, column=3, sticky="ew")
+        command=(lambda: addToOrder("Negroni", window)),
+    ).grid(row=1, column=2, sticky="ew")
 
     moscButton = Button(
         window,
         text="Moscow Mule",
         image=moscoIm,
         compound=TOP,
-        command=(lambda: addToOrder("MoscowMule")),
-    ).grid(row=1, column=4, sticky="ew")
+        command=(lambda: addToOrder("MoscowMule", window)),
+    ).grid(row=1, column=3, sticky="ew")
 
     # Drink buttons row 3
-    mojButton = Button(
+    oldfButton = Button(
         window,
-        text="Mojito",
+        text="Old Fashioned",
         image=oldfIm,
         compound=TOP,
-        command=(lambda: addToOrder("Mojito")),
-    ).grid(row=2, column=1, sticky="ew")
+        command=(lambda: addToOrder("OldFashioned", window)),
+    ).grid(row=2, column=0, sticky="ew")
 
-    negroniButton = Button(
+    wsrButton = Button(
         window,
-        text="Negroni",
+        text="Whiskey Sour",
         image=whiskIm,
         compound=TOP,
-        command=(lambda: addToOrder("Negroni")),
-    ).grid(row=2, column=2, sticky="ew")
+        command=(lambda: addToOrder("WhiskeySour", window)),
+    ).grid(row=2, column=1, sticky="ew")
 
     # Clock in Button
     clockIn = Button(window, text="Clock In", command=clockIn).grid(
-        row=0, column=0, sticky="ew"
+        row=4, column=0, sticky="ew"
     )
 
     # Clock out Button
     clockOut = Button(window, text="Clock Out", command=clockOut).grid(
-        row=1, column=0, sticky="ew"
+        row=5, column=0, sticky="ew"
     )
 
     # Display Inventory Button
     viewInventory = Button(
         window, text="View Inventory", command=displayInventory
-    ).grid(row=2, column=0, sticky="ew")
-
-    # Add to Inventory Button
-    fillInventory = Button(window, text="Add to Inventory", command=addInventory).grid(
-        row=3, column=0, sticky="ew"
-    )
+    ).grid(row=6, column=0, sticky="ew")
 
     # View Sales Button
     viewSales = Button(window, text="View Sales", command=displaySales).grid(
-        row=4, column=0, sticky="ew"
-    )
-
-    # Reorder Button
-    reorder = Button(window, text="Repeat Last Order", command=repeatOrder).grid(
-        row=5, column=0, sticky="ew"
+        row=7, column=0, sticky="ew"
     )
 
     # Edit Employee List Button
     addEmployee = Button(window, text="Edit Employee", command=generateEmployee).grid(
-        row=6, column=0, sticky="ew"
+        row=8, column=0, sticky="ew"
+    )
+
+    header1 = Label(window, text="Drink").grid(row=4, column=1)
+    header2 = Label(window, text="Qty.").grid(row=4, column=2)
+    header3 = Label(window, text="Employee ID: ").grid(row=6, column=3)
+
+    empIdEntry = Entry(window)
+    empIdEntry.grid(row=7, column=3)
+
+    submitOrderButton = Button(
+        window, text="Submit Order", command=(lambda: placeOrder(window, empIdEntry))
+    ).grid(row=4, column=3)
+    reorderButton = Button(window, text="Repeat Order", command=repeatOrder).grid(
+        row=5, column=3
     )
 
     window.mainloop()
